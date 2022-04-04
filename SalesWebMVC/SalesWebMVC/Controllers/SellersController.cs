@@ -6,19 +6,23 @@ using System.Threading.Tasks;
 using SalesWebMVC.Data;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVC.Models;
+using SalesWebMVC.Services;
 
 namespace SalesWebMVC.Controllers
 {
     public class SellersController : Controller
     {
-        private SalesWebMVCContext _context;
-        public SellersController(SalesWebMVCContext context)
+        private readonly SellerService _sellerService;
+        
+        public SellersController(SellerService sellerService)
         {
-            _context = context;
+            _sellerService = sellerService;            
         }
+
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Seller.ToListAsync());
+            var list = await _sellerService.FindAllAsync();
+            return View(list);
         }
 
         // GET: Sellers/Create
@@ -32,12 +36,11 @@ namespace SalesWebMVC.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email,BirthDate,BaseSalary,Department")] Seller seller)
+        public IActionResult Create([Bind("Id,Name,Email,BirthDate,BaseSalary,Department")] Seller seller)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(seller);
-                await _context.SaveChangesAsync();
+                _sellerService.Insert(seller);
                 return RedirectToAction(nameof(Index));
             }
             return View(seller);
