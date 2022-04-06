@@ -7,16 +7,19 @@ using SalesWebMVC.Data;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVC.Models;
 using SalesWebMVC.Services;
+using SalesWebMVC.Models.ViewModels;
 
 namespace SalesWebMVC.Controllers
 {
     public class SellersController : Controller
     {
         private readonly SellerService _sellerService;
+        private readonly DepartmentService _departmentService;
         
-        public SellersController(SellerService sellerService)
+        public SellersController(SellerService sellerService, DepartmentService departmentService)
         {
-            _sellerService = sellerService;            
+            _sellerService = sellerService;
+            _departmentService = departmentService;
         }
 
         public async Task<IActionResult> Index()
@@ -28,7 +31,9 @@ namespace SalesWebMVC.Controllers
         // GET: Sellers/Create
         public IActionResult Create()
         {
-            return View();
+            var department = _departmentService.FindAll();
+            var viewModel = new SellerFormViewModel { Departments = department };
+            return View(viewModel);
         }
 
         // POST: Sellers/Create
@@ -36,14 +41,10 @@ namespace SalesWebMVC.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("Id,Name,Email,BirthDate,BaseSalary,Department")] Seller seller)
-        {
-            if (ModelState.IsValid)
-            {
+        public IActionResult Create(Seller seller)
+        {   
                 _sellerService.Insert(seller);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(seller);
+                return RedirectToAction(nameof(Index));         
         }
     }
 }
